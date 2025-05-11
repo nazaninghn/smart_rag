@@ -12,7 +12,7 @@ from langchain.chains import RetrievalQA
 def create_faiss_tool():
     embeddings = OpenAIEmbeddings()
     
-    # اضافه کردن allow_dangerous_deserialization به True
+    
     db = FAISS.load_local("vectorstore", embeddings, allow_dangerous_deserialization=True)
     retriever = db.as_retriever()
     

@@ -1,12 +1,11 @@
-
 import os
 from django.core.files.storage import default_storage
 from django.shortcuts import render
 from .vector_builder import build_vectorstore_from_file
-from .agent_engine import run_agent
 from .rag_engine import get_answer_with_memory
+from .agent_engine import run_agent
+from .text_writer import summarize_text, paraphrase_text, expand_to_article
 
-# View for home page where user can ask questions
 def home(request):
     answer = None
     if request.method == "POST":
@@ -15,10 +14,9 @@ def home(request):
             try:
                 answer = get_answer_with_memory(query)
             except Exception as e:
-                answer = f"Error: {str(e)}"
+                answer = f"❌ Error: {str(e)}"
     return render(request, "rag/index.html", {"answer": answer})
 
-# View for file upload and vectorstore creation
 def upload_file(request):
     message = ""
     if request.method == "POST":
@@ -33,15 +31,32 @@ def upload_file(request):
                 message = f"❌ Error: {str(e)}"
     return render(request, "rag/upload.html", {"message": message})
 
-# View to handle questions using the agent
 def agent_view(request):
-    result = None
+    answer = None
     if request.method == "POST":
         query = request.POST.get("query")
         if query:
             try:
-                result = run_agent(query)
+                answer = run_agent(query)
             except Exception as e:
-                result = f"❌ Error: {str(e)}"
-    return render(request, "rag/agent.html", {"result": result})
+                answer = f"❌ Error: {str(e)}"
+    return render(request, "rag/agent.html", {"answer": answer})
 
+def text_tools_view(request):
+    output = ""
+    if request.method == "POST":
+        input_text = request.POST.get("input_text")
+        action = request.POST.get("action")
+
+        if input_text and action:
+            try:
+                if action == "summarize":
+                    output = summarize_text(input_text)
+                elif action == "paraphrase":
+                    output = paraphrase_text(input_text)
+                elif action == "expand":
+                    output = expand_to_article(input_text)
+            except Exception as e:
+                output = f"❌ Error: {str(e)}"
+    
+    return render(request, "rag/text_tools.html", {"output": output})
