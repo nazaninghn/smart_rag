@@ -5,14 +5,27 @@ load_dotenv()
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.llms import OpenAI
 from langchain.vectorstores import FAISS
-from langchain.chains import RetrievalQA
+from langchain.chains import ConversationalRetrievalChain
+from langchain.memory import ConversationBufferMemory
 
-def get_answer(query):
+
+memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+
+def get_chatbot():
     embeddings = OpenAIEmbeddings()
     db = FAISS.load_local("vectorstore", embeddings)
     retriever = db.as_retriever()
-    qa = RetrievalQA.from_chain_type(
-        llm=OpenAI(temperature=0),
-        retriever=retriever
+    llm = OpenAI(temperature=0)
+    chain = ConversationalRetrievalChain.from_llm(
+        llm=llm,
+        retriever=retriever,
+        memory=memory,
+        verbose=False
     )
-    return qa.run(query)
+    return chain
+
+
+def get_answer_with_memory(query):
+    chain = get_chatbot()
+    response = chain.run(query)
+    return response

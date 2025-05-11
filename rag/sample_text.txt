@@ -1,0 +1,2 @@
+LangChain is a framework for building applications powered by language models like GPT.
+It provides components for RAG, summarization, and more.
